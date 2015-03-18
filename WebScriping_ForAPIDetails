@@ -1,0 +1,51 @@
+import lxml.html
+from bs4 import BeautifulSoup
+import urllib2
+import re
+import json
+some_url="http://www.programmableweb.com/category/all/apis?order=field_popularity"
+content = urllib2.urlopen(some_url).read()
+soup = BeautifulSoup(content, features='html')    
+apiname=[]
+apilink=[]
+ApiCategory=[]
+apidescription=[]
+apiodd=soup.find_all('tr',{'class':"odd"})
+for d in apiodd:
+	table_data=d.find_all('td',{'class':"views-field views-field-title"})
+	
+	
+	for t in table_data:
+		apiname1=t.find('a')
+		apilink1=apiname1.get('href')
+		apiname1=apiname1.get_text()
+		apiname.append(apiname1)
+		apilink.append(apilink1)
+	for link in apilink:
+		link_url="http://www.programmableweb.com"+apilink1+""
+		content = urllib2.urlopen(link_url).read()
+		soup = BeautifulSoup(content, features='html')
+		table_data2=soup.find('div',{'class':"api_description tabs-header_description"})
+		table_data2=table_data2.get_text()
+		apidescription.append(table_data2)
+	apicategory=soup.find_all('td',{'class':"views-field views-field-field-article-primary-category"})
+	for category in apicategory:
+		apicategory=category.find('a')
+		if apicategory != None:
+			apicategory=apicategory.get_text()
+			#print apicategory
+			ApiCategory.append(apicategory)
+		else:
+			#print "unknown"
+			ApiCategory.append("unknown")		
+
+	#print ("ApiName:- "+apiname1+" , ApiLink:- "+apilink1+" , ApiDescription"+table_data2)
+	data=[{"APIName":apiname1.encode('utf-8'),"APILink": apilink1.encode('utf-8'),"APIDescription":table_data2,"ApiCategory":apicategory}]
+	#print data
+	import json
+	#with open('api.csv', 'w', newline='') as fp:
+    	#a = csv.writer(fp, delimiter=',') 
+    	#a.writerows(data)
+	with open('api.csv',"a+") as f:
+		json.dump(data,f)
+	print "STOP"
